@@ -8,7 +8,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 # ====== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ ======
 TOKEN = os.getenv("TOKEN")  # токен бота
-REPORT_CHAT_ID = None  # временно
+REPORT_CHAT_ID = int(os.getenv("REPORT_CHAT_ID"))  # ID чата отчётности
 ADMIN_ID = int(os.getenv("ADMIN_ID"))  # ID руководителя
 
 # ====== ИНИЦИАЛИЗАЦИЯ ======
@@ -25,11 +25,7 @@ bot = Bot(
 )
 
 dp = Dispatcher(storage=storage)
-# Временный хендлер для получения chat_id
-@dp.message()
-async def temp_handler(msg: Message):
-    await msg.answer(f"Я вижу это: {msg.text}")
-    await msg.answer(f"Chat ID этого чата: {msg.chat.id}")
+
 # ====== FSM СТАНЫ ======
 class ReportFSM(StatesGroup):
     shift = State()
