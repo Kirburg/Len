@@ -102,4 +102,83 @@ async def start(msg: Message, state: FSMContext):
 @dp.callback_query(F.data.startswith("shift_"))
 async def choose_shift(cb, state: FSMContext):
     shift = cb.data.split("_")[1]
-    await state.u
+    await state.update_data(shift=shift)
+    await cb.message.edit_text(f"Смена {shift}. Что дальше?", reply_markup=type_kb())
+    await state.set_state(ReportFSM.type)
+
+@dp.callback_query(F.data == "type_dop")
+async def dop(cb, state: FSMContext):
+    await cb.message.edit_text("ДОП статус:", reply_markup=dop_kb())
+    await state.set_state(ReportFSM.dop_status)
+
+@dp.callback_query(F.data == "dop_ok")
+async def dop_ok(cb, state: FSMContext):
+    data = await state.get_data()
+    date = datetime.now().strftime("%d.%m.%Y")
+    user_mention = mention_user(cb.from_user)
+    text = (
+        "✅\n"
+        f"Эпизоды [{date}]\n"
+        "эпизоды обработаны.\n\n"
+        f"Ответственный: {user_mention}, смена {data['shift']}"
+    )
+    await bot.send_message(REPORT_CHAT_ID, text)
+    await state.clear()
+    await cb.message.delete()
+
+@dp.callback_query(F.data == "dop_warn")
+async def dop_warn(cb, state: FSMContext):
+    await cb.message.edit_text("Напиши, на кого обратить внимание:")
+    await state.set_state(ReportFSM.text)
+    await state.update_data(dop_warn=True)
+    await cb.message.delete()
+
+@dp.callback_query(F.data == "type_vi")
+async def vi(cb, state: FSMContext):
+    await cb.message.edit_text("Напиши саммари ВИ:")
+    await state.set_state(ReportFSM.text)
+    await state.update_data(dop_vi=True)
+    await cb.message.delete()
+
+@dp.message(ReportFSM.text)
+async def input_text(msg: Message, state: FSMContext):
+    data = await state.get_data()
+    date = datetime.now().strftime("%d.%m.%Y")
+    user_mention = mention_user(msg.from_user)
+
+    # ДОП ⚠️
+    if data.get("dop_warn"):
+        text = (
+            "⚠️\n"
+            f"Эпизоды [{date}]\n"
+            "Эпизоды обработаны.\n"
+            f"На кого стоит обратить внимание:\n{msg.text}\n\n"
+            f"Ответственный: {user_mention}, смена {data['shift']}"
+        )
+    # ВИ
+    elif data.get("dop_vi"):
+        text = (
+            "👀\n"
+            f"[ВИ] [{date}]\n\n"
+            f"Саммари:\n{msg.text}\n\n"
+            f"Ответственный: {user_mention}\n"
+            f"Статус: требует внимания {mention_admin()}"
+        )
+    else:
+        text = "Неопределённый сценарий"
+
+    # Отправка отчёта
+    await bot.send_message(REPORT_CHAT_ID, text)
+
+    # Удаляем сообщение пользователя
+    await msg.delete()
+
+    # Сбрасываем FSM
+    await state.clear()
+
+# ====== ЗАПУСК ======
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
