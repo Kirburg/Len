@@ -28,6 +28,10 @@ bot = Bot(
 )
 
 dp = Dispatcher(storage=storage)
+@dp.message()
+async def temp_handler(msg: Message):
+    await msg.answer(f"Я вижу это: {msg.text}")
+    await msg.answer(f"Chat ID этого чата: {msg.chat.id}")
 
 # ====== FSM СТАНЫ ======
 class ReportFSM(StatesGroup):
