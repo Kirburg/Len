@@ -34,7 +34,7 @@ class ReportFSM(StatesGroup):
 def shift_kb():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=s, callback_data=f"shift_{s}")]
-        for s in ["8", "11", "14", "20"]
+        for s in ["8-20", "11-23", "14-02", "20-08"]
     ])
 
 def type_kb():
@@ -52,7 +52,14 @@ def dop_kb():
             InlineKeyboardButton(text="⚠️ Внимание", callback_data="dop_warn"),
         ]
     ])
-
+# Persistent кнопка меню
+menu_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="/start")]
+    ],
+    resize_keyboard=True,
+    one_time_keyboard=False
+)
 # ====== ФУНКЦИИ ======
 def mention_user(user):
     return f'<a href="tg://user?id={user.id}">{user.full_name}</a>'
@@ -63,7 +70,14 @@ def mention_admin():
 # ====== ХЕНДЛЕРЫ ======
 @dp.message(F.text == "/start")
 async def start(msg: Message, state: FSMContext):
-    await msg.answer("Выбирай смену:", reply_markup=shift_kb())
+    # Удаляем команду пользователя
+    try:
+        await msg.delete()
+    except:
+        pass
+
+    # Отправляем меню смен
+    await bot.send_message(msg.chat.id, "Выбирай смену:", reply_markup=shift_kb(), reply_markup_persistent=menu_kb)
     await state.clear()  # сброс предыдущих состояний
 
 @dp.callback_query(F.data.startswith("shift_"))
@@ -91,21 +105,21 @@ async def dop_ok(cb, state: FSMContext):
     )
     await bot.send_message(REPORT_CHAT_ID, text)
     await state.clear()
-    await cb.message.delete()  # удаляем кнопку после отправки
+    await cb.message.delete()
 
 @dp.callback_query(F.data == "dop_warn")
 async def dop_warn(cb, state: FSMContext):
     await cb.message.edit_text("Напиши, на кого обратить внимание:")
     await state.set_state(ReportFSM.text)
     await state.update_data(dop_warn=True)
-    await cb.message.delete()  # удаляем кнопку ДОП после выбора
+    await cb.message.delete()
 
 @dp.callback_query(F.data == "type_vi")
 async def vi(cb, state: FSMContext):
     await cb.message.edit_text("Напиши саммари ВИ:")
     await state.set_state(ReportFSM.text)
     await state.update_data(dop_vi=True)
-    await cb.message.delete()  # удаляем кнопку ВИ после выбора
+    await cb.message.delete()
 
 @dp.message(ReportFSM.text)
 async def input_text(msg: Message, state: FSMContext):
@@ -142,9 +156,6 @@ async def input_text(msg: Message, state: FSMContext):
 
     # Сбрасываем FSM
     await state.clear()
-
-    # Снова показываем меню смен
-    await bot.send_message(msg.chat.id, "Выбирай смену:", reply_markup=shift_kb())
 
 # ====== ЗАПУСК ======
 async def main():
