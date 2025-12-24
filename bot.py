@@ -136,7 +136,7 @@ async def input_text(msg: Message, state: FSMContext):
     else:
         text = (
             "👀\n"
-            f"[ВИ] [{date}]\n\n"
+            f"ВИ [{date}]\n\n"
             f"Саммари:\n{msg.text}\n\n"
             f"Ответственный: {user}\n"
             f"Статус: требует внимания {mention_admin()}"
