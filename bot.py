@@ -24,7 +24,8 @@ bot = Bot(
 dp = Dispatcher()
 # Временный хендлер для получения chat_id
 @dp.message()
-async def get_chat_id(msg: Message):
+async def temp_handler(msg: Message):
+    await msg.answer(f"Я вижу это: {msg.text}")
     await msg.answer(f"Chat ID этого чата: {msg.chat.id}")
 # ====== FSM СТАНЫ ======
 class ReportFSM(StatesGroup):
