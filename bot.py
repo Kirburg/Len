@@ -8,7 +8,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 # ====== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ ======
 TOKEN = os.getenv("TOKEN")  # токен бота
-REPORT_CHAT_ID = int(os.getenv("REPORT_CHAT_ID"))  # ID чата отчётности
+REPORT_CHAT_ID = None  # временно
 ADMIN_ID = int(os.getenv("ADMIN_ID"))  # ID руководителя
 
 # ====== ИНИЦИАЛИЗАЦИЯ ======
