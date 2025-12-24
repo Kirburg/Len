@@ -14,7 +14,10 @@ ADMIN_ID = int(os.getenv("ADMIN_ID"))  # ID руководителя
 # ====== ИНИЦИАЛИЗАЦИЯ ======
 bot = Bot(TOKEN, parse_mode="HTML")
 dp = Dispatcher()
-
+# Временный хендлер для получения chat_id
+@dp.message()
+async def get_chat_id(msg: Message):
+    await msg.answer(f"Chat ID этого чата: {msg.chat.id}")
 # ====== FSM СТАНЫ ======
 class ReportFSM(StatesGroup):
     shift = State()
