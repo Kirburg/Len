@@ -12,7 +12,15 @@ REPORT_CHAT_ID = None  # временно
 ADMIN_ID = int(os.getenv("ADMIN_ID"))  # ID руководителя
 
 # ====== ИНИЦИАЛИЗАЦИЯ ======
-bot = Bot(TOKEN, parse_mode="HTML")
+from aiogram.client.session.aiohttp import AiohttpSession
+from aiogram.client.bot import Bot
+from aiogram.client.bot_api import DefaultBotProperties
+
+bot = Bot(
+    token=TOKEN,
+    default=DefaultBotProperties(parse_mode="HTML")
+)
+
 dp = Dispatcher()
 # Временный хендлер для получения chat_id
 @dp.message()
