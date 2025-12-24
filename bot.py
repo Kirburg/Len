@@ -2,13 +2,7 @@ import os
 import asyncio
 from datetime import datetime
 from aiogram import Bot, Dispatcher, F
-from aiogram.types import (
-    Message,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    ReplyKeyboardMarkup,
-    KeyboardButton
-)
+from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -59,15 +53,6 @@ def dop_kb():
         ]
     ])
 
-# Persistent кнопка меню
-menu_kb = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="/start")]
-    ],
-    resize_keyboard=True,
-    one_time_keyboard=False
-)
-
 # ====== ФУНКЦИИ ======
 def mention_user(user):
     return f'<a href="tg://user?id={user.id}">{user.full_name}</a>'
@@ -84,7 +69,7 @@ async def start(msg: Message, state: FSMContext):
     except:
         pass
 
-    # Отправляем меню смен 
+    # Отправляем только меню смен
     await bot.send_message(
         msg.chat.id,
         "Выбирай смену:",
