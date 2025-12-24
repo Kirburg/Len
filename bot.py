@@ -84,17 +84,11 @@ async def start(msg: Message, state: FSMContext):
     except:
         pass
 
-    # Отправляем меню смен с кнопкой меню
+    # Отправляем меню смен 
     await bot.send_message(
         msg.chat.id,
         "Выбирай смену:",
         reply_markup=shift_kb()
-    )
-    # Кнопка меню внизу экрана (persistent)
-    await bot.send_message(
-        msg.chat.id,
-        "Меню:",
-        reply_markup=menu_kb
     )
 
     await state.clear()  # сброс предыдущих состояний
