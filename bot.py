@@ -5,6 +5,8 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.client.bot import DefaultBotProperties
 
 # ====== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ ======
 TOKEN = os.getenv("TOKEN")  # токен бота
@@ -12,11 +14,6 @@ REPORT_CHAT_ID = int(os.getenv("REPORT_CHAT_ID"))  # ID чата отчётно�
 ADMIN_ID = int(os.getenv("ADMIN_ID"))  # ID руководителя
 
 # ====== ИНИЦИАЛИЗАЦИЯ ======
-from aiogram import Bot, Dispatcher
-from aiogram.client.bot import DefaultBotProperties
-from aiogram.fsm.storage.memory import MemoryStorage
-
-# storage для FSM
 storage = MemoryStorage()
 
 bot = Bot(
@@ -67,7 +64,7 @@ def mention_admin():
 @dp.message(F.text == "/start")
 async def start(msg: Message, state: FSMContext):
     await msg.answer("Выбирай смену:", reply_markup=shift_kb())
-    await state.set_state(ReportFSM.shift)
+    await state.clear()  # сброс предыдущих состояний
 
 @dp.callback_query(F.data.startswith("shift_"))
 async def choose_shift(cb, state: FSMContext):
@@ -94,19 +91,21 @@ async def dop_ok(cb, state: FSMContext):
     )
     await bot.send_message(REPORT_CHAT_ID, text)
     await state.clear()
-    await cb.message.edit_text("Отправлено ✔️")
+    await cb.message.delete()  # удаляем кнопку после отправки
 
 @dp.callback_query(F.data == "dop_warn")
 async def dop_warn(cb, state: FSMContext):
     await cb.message.edit_text("Напиши, на кого обратить внимание:")
     await state.set_state(ReportFSM.text)
     await state.update_data(dop_warn=True)
+    await cb.message.delete()  # удаляем кнопку ДОП после выбора
 
 @dp.callback_query(F.data == "type_vi")
 async def vi(cb, state: FSMContext):
     await cb.message.edit_text("Напиши саммари ВИ:")
     await state.set_state(ReportFSM.text)
     await state.update_data(dop_vi=True)
+    await cb.message.delete()  # удаляем кнопку ВИ после выбора
 
 @dp.message(ReportFSM.text)
 async def input_text(msg: Message, state: FSMContext):
@@ -124,7 +123,7 @@ async def input_text(msg: Message, state: FSMContext):
             f"Ответственный: {user_mention}, смена {data['shift']}"
         )
     # ВИ
-    elif data.get("dop_vi") or data.get("type_vi"):
+    elif data.get("dop_vi"):
         text = (
             "👀\n"
             f"[ВИ] [{date}]\n\n"
@@ -135,15 +134,17 @@ async def input_text(msg: Message, state: FSMContext):
     else:
         text = "Неопределённый сценарий"
 
-    # Отправляем сообщение в чат отчётности
-    if REPORT_CHAT_ID:
-        await bot.send_message(REPORT_CHAT_ID, text)
+    # Отправка отчёта
+    await bot.send_message(REPORT_CHAT_ID, text)
 
-    # Удаляем сообщение пользователя, чтобы в чате остался только бот
+    # Удаляем сообщение пользователя
     await msg.delete()
 
-    # Очищаем состояние FSM
+    # Сбрасываем FSM
     await state.clear()
+
+    # Снова показываем меню смен
+    await bot.send_message(msg.chat.id, "Выбирай смену:", reply_markup=shift_kb())
 
 # ====== ЗАПУСК ======
 async def main():
