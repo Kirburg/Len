@@ -67,7 +67,7 @@ def mention_admin():
     return f'<a href="tg://user?id={ADMIN_ID}">Руководитель</a>'
 
 # ====== ХЕНДЛЕРЫ ======
-@dp.message(F.text.in_({"/start", f"/start@{bot.username}"}))
+@dp.message(F.text.in_({"/start", f"/start@DD1o_bot"}))
 async def start(msg: Message, state: FSMContext):
     try:
         await msg.delete()
