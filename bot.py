@@ -59,13 +59,6 @@ def dop_kb():
         ]
     ])
 
-# persistent кнопка /start для группы
-start_kb = ReplyKeyboardMarkup(
-    keyboard=[[KeyboardButton("/start")]],
-    resize_keyboard=True,
-    one_time_keyboard=False
-)
-
 # ====== ФУНКЦИИ ======
 def mention_user(user):
     return f'<a href="tg://user?id={user.id}">{user.full_name}</a>'
