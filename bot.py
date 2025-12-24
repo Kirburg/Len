@@ -11,7 +11,7 @@ from aiogram.client.bot import DefaultBotProperties
 
 # ====== ENV ======
 TOKEN = os.getenv("TOKEN")
-REPORT_CHAT_ID = int(os.getenv("REPORT_CHAT_ID"))
+REPORT_CHAT_ID = None # временно
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 # ====== INIT ======
