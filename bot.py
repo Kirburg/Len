@@ -2,7 +2,13 @@ import os
 import asyncio
 from datetime import datetime
 from aiogram import Bot, Dispatcher, F
-from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import (
+    Message, 
+    InlineKeyboardButton, 
+    InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,
+    KeyboardButton
+)
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -53,10 +59,12 @@ def dop_kb():
         ]
     ])
 
-def main_menu_kb():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Главное меню", callback_data="main_menu")]
-    ])
+# persistent кнопка /start для группы
+start_kb = ReplyKeyboardMarkup(
+    keyboard=[[KeyboardButton("/start")]],
+    resize_keyboard=True,
+    one_time_keyboard=False
+)
 
 # ====== ФУНКЦИИ ======
 def mention_user(user):
@@ -72,8 +80,8 @@ async def start(msg: Message, state: FSMContext):
         await msg.delete()
     except:
         pass
-    await bot.send_message(
-        msg.chat.id,
+    # Inline меню смен прямо в чате группы
+    await msg.answer(
         "Выбирай смену:",
         reply_markup=shift_kb()
     )
@@ -105,8 +113,6 @@ async def dop_ok(cb, state: FSMContext):
     await bot.send_message(REPORT_CHAT_ID, text)
     await state.clear()
     await cb.message.delete()
-    # После отправки показываем кнопку "Главное меню"
-    await bot.send_message(cb.from_user.id, "Меню:", reply_markup=main_menu_kb())
 
 @dp.callback_query(F.data == "dop_warn")
 async def dop_warn(cb, state: FSMContext):
@@ -149,14 +155,6 @@ async def input_text(msg: Message, state: FSMContext):
 
     await bot.send_message(REPORT_CHAT_ID, text)
     await msg.delete()
-    await state.clear()
-    # После отправки показываем кнопку "Главное меню"
-    await bot.send_message(msg.from_user.id, "Меню:", reply_markup=main_menu_kb())
-
-@dp.callback_query(F.data == "main_menu")
-async def go_main_menu(cb, state: FSMContext):
-    await cb.message.delete()
-    await cb.message.answer("Выбирай смену:", reply_markup=shift_kb())
     await state.clear()
 
 # ====== ЗАПУСК ======
