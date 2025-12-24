@@ -135,9 +135,15 @@ async def input_text(msg: Message, state: FSMContext):
     else:
         text = "Неопределённый сценарий"
 
-    await bot.send_message(REPORT_CHAT_ID, text)
+    # Отправляем сообщение в чат отчётности
+    if REPORT_CHAT_ID:
+        await bot.send_message(REPORT_CHAT_ID, text)
+
+    # Удаляем сообщение пользователя, чтобы в чате остался только бот
+    await msg.delete()
+
+    # Очищаем состояние FSM
     await state.clear()
-    await msg.answer("Готово ✔️")
 
 # ====== ЗАПУСК ======
 async def main():
